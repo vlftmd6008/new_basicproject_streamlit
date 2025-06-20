@@ -56,7 +56,14 @@ df_usg = filter_by_usg(df_rooms)
 df_final = filter_by_new_old(df_usg)
 
 st.write("📊 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 데이터:")
-if st.button("📋 결과 보기",key="show_result1"):
+
+if "show_result1" not in st.session_state:
+    st.session_state["show_result1"] = False
+
+if st.button("📋 결과 보기", key="show_result1_button"):
+    st.session_state["show_result1"] = True
+
+if st.session_state["show_result1"]:
     st.dataframe(df_final)
 
 st.write(f"## 다음으로 {name}님이 원하시는 N개의 상위 법정동 찾아보겠습니다.")
@@ -114,12 +121,25 @@ st.write("""4. 계산된 가중치를 활용해, 각 법정동의 종합 점수(
 topN = pd.read_csv("topN.csv", encoding='utf-8-sig')
 N = st.number_input(f"## {name}님이 원하시는 상위 법정동의 개수를 선택해주세요. (예: 5, 10)", value=10)
 top = topN.head(N)
-st.write(f"{name}님이 원하시는 상위 {N}개 법정동:")
-if st.button("📋 결과 보기",key="show_result2"):
+top = pd.DataFrame(top)
+
+if "show_result2" not in st.session_state:
+    st.session_state["show_result2"] = False
+
+if st.button("📋 결과 보기", key="show_result2_button"):
+    st.session_state["show_result2"] = True
+
+if st.session_state["show_result2"]:
     st.dataframe(top)
 
 filtered_real_estate = pd.merge(df_final, top, how='inner', on=['CGG_NM', 'STDG_NM'])
 st.write(f"### {name}님이 원하시는 상위 {N}개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
-if st.button("📋 결과 보기",key="show_result3"):
-    st.dataframe(filtered_real_estate.head(30))
 
+if "show_result3" not in st.session_state:
+    st.session_state["show_result3"] = False
+
+if st.button("📋 결과 보기", key="show_result3_button"):
+    st.session_state["show_result3"] = True
+
+if st.session_state["show_result3"]:
+    st.dataframe(filtered_real_estate.head(30))

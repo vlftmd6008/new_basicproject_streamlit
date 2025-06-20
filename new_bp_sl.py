@@ -82,14 +82,6 @@ table_data = {
 }
 
 df_info = pd.DataFrame(table_data)
-df_info = df_info.reset_index()
-df_info.index.name = "index"
-st.dataframe(
-    df_info,
-    column_config={
-        "index": st.column_config.Hidden("index", hide=True)
-    }
-)
 
 st.write("📊 활용 지표 설명")
 st.dataframe(df_info)

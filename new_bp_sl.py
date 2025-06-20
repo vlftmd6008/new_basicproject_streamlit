@@ -82,7 +82,7 @@ table_data = {
 }
 
 df_info = pd.DataFrame(table_data)
-st.dataframe(df_info.reset_index(drop=True))
+df_info = df_info.reset_index(drop=True)
 
 st.write("📊 활용 지표 설명")
 st.table(df_info)

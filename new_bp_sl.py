@@ -56,7 +56,7 @@ df_usg = filter_by_usg(df_rooms)
 df_final = filter_by_new_old(df_usg)
 
 st.write("📊 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 데이터:")
-if st.button("📋 결과 보기"):
+if st.button("📋 결과 보기",key="show_result1"):
     st.dataframe(df_final)
 
 st.write(f"## 다음으로 {name}님이 원하시는 N개의 상위 법정동 찾아보겠습니다.")
@@ -110,5 +110,5 @@ topN = pd.read_csv("topN.csv", encoding='utf-8-sig')
 N = st.number_input(f"## {name}님이 원하시는 상위 법정동의 개수를 선택해주세요. (예: 5, 10)", value=10)
 top = topN.head(N)
 st.write(f"{name}님이 원하시는 상위 {N}개 법정동:")
-if st.button("📋 결과 보기"):
+if st.button("📋 결과 보기",key="show_result2"):
     st.dataframe(top)

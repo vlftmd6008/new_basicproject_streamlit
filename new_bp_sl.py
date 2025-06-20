@@ -161,6 +161,92 @@ filtered_subway = subway[
     (subway['CGG_NM'].isin(filtered_real_estate['CGG_NM'])) &
     (subway['STDG_NM'].isin(filtered_real_estate['STDG_NM']))
 ]
+## 학교 위치 데이터 불러오기
+df_school_addr = pd.read_csv('전국초중등학교위치표준데이터.csv', encoding='cp949')
+df_school_addr = df_school_addr[df_school_addr['시도교육청명'] == '서울특별시교육청']
+df_school_addr.loc[:, 'CGG_NM'] = df_school_addr['소재지지번주소'].str.extract(r'([가-힣]+구)')
+df_school_addr.loc[:, 'STDG_NM'] = df_school_addr['소재지지번주소'].str.extract(r'([가-힣]+동)')
+school = df_school_addr[['CGG_NM', 'STDG_NM', '학교명', '위도', '경도']]
+
+filtered_school = school[
+    (school['CGG_NM'].isin(filtered_real_estate['CGG_NM'])) &
+    (school['STDG_NM'].isin(filtered_real_estate['STDG_NM']))
+]
+
+import requests
+import time
+import json
+import os
+
+# ① 카카오 API 키 설정
+KAKAO_REST_API_KEY = "58a94e08cd433f0a789ddee57624f990"
+
+# ② 주소 → 위경도 변환 함수 (단일 요청용)
+def get_coords_from_address(address, api_key):
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {"Authorization": f"KakaoAK {api_key}"}
+    params = {"query": address}
+    try:
+        res = requests.get(url, headers=headers, params=params)
+        if res.status_code == 200:
+            data = res.json()
+            if data['documents']:
+                first = data['documents'][0]
+                lat = float(first['y'])  # 위도
+                lng = float(first['x'])  # 경도
+                return lat, lng
+    except:
+        pass
+    return None, None
+
+# ③ 캐시 파일 로드
+CACHE_PATH = "coord_cache.json"
+if os.path.exists(CACHE_PATH):
+    with open(CACHE_PATH, "r", encoding="utf-8") as f:
+        coord_cache = json.load(f)
+else:
+    coord_cache = {}
+
+# ④ 주소 리스트 준비 (예시 DataFrame)
+st.title("주소 → 좌표 변환기")
+
+uploaded = st.file_uploader("CSV 업로드 (address 컬럼 필요)", type="csv")
+
+if uploaded is not None:
+    df = pd.read_csv(uploaded)
+
+    if "address" not in df.columns:
+        st.error("❌ 'address' 컬럼이 없습니다.")
+        st.stop()
+
+    lat_list = []
+    lng_list = []
+    progress = st.progress(0, text="주소 변환 중...")
+
+    for i, addr in enumerate(df['address']):
+        if addr in coord_cache:
+            lat, lng = coord_cache[addr]
+        else:
+            lat, lng = get_coords_from_address(addr, KAKAO_REST_API_KEY)
+            coord_cache[addr] = [lat, lng]
+            time.sleep(0.1)  # 너무 빠른 호출 방지
+
+        lat_list.append(lat)
+        lng_list.append(lng)
+        progress.progress((i + 1) / len(df), text=f"{i + 1} / {len(df)} 변환 완료")
+
+    df['위도'] = lat_list
+    df['경도'] = lng_list
+
+    # ⑤ 캐시 저장
+    with open(CACHE_PATH, "w", encoding="utf-8") as f:
+        json.dump(coord_cache, f, ensure_ascii=False, indent=2)
+
+    st.success("✅ 좌표 변환 완료")
+    st.dataframe(df)
+
+    # ⑥ 다운로드 제공
+    csv = df.to_csv(index=False).encode('utf-8-sig')
+    st.download_button("📥 CSV 다운로드", csv, "converted_with_coords.csv", "text/csv")
 
 
-st.dataframe(filtered_subway)

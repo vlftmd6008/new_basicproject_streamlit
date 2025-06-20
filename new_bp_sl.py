@@ -153,7 +153,7 @@ import papermill as pm
 filtered_real_estate.to_csv("filtered_real_estate.csv", index=False)
 pm.execute_notebook(
     input_path="bp_sl.ipynb",
-    output_path="bp_sl.ipynb",
+    output_path="bp_sl_output.ipynb",
     parameters=dict(input_file="filtered_real_estate.csv")
 )
 

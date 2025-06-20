@@ -1,0 +1,6 @@
+streamlit
+pandas
+numpy
+papermill
+jupyter
+openpyxl

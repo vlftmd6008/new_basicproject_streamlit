@@ -116,3 +116,5 @@ if st.button("📋 결과 보기",key="show_result2"):
 filtered_real_estate = pd.merge(df_final, top, how='inner', on=['CGG_NM', 'STDG_NM'])
 st.write(f"## {name}님이 원하시는 상위 {N}개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
 st.dataframe(filtered_real_estate.head(30))
+st.write("filtered_real_estate shape:", filtered_real_estate.shape)
+st.write(filtered_real_estate.head())

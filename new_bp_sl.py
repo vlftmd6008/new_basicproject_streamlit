@@ -161,4 +161,6 @@ filtered_subway = subway[
     (subway['CGG_NM'].isin(filtered_real_estate['CGG_NM'])) &
     (subway['STDG_NM'].isin(filtered_real_estate['STDG_NM']))
 ]
+
+
 st.dataframe(filtered_subway)

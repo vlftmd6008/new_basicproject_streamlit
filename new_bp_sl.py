@@ -386,6 +386,12 @@ st.dataframe(df_school)
 st.subheader("지도")
 st_data = st_folium(folium_map, width=700, height=500)
 
+final_real_estate = pd.merge(df_subway, df_school, how='inner', on=['매물주소'])
+
+
+st.subheader("학교와 지하철 모두 도보 800m 이내 매물 리스트")
+st.dataframe(final_real_estate)
+st_data = st_folium(folium_map, width=700, height=500)
 
 
 

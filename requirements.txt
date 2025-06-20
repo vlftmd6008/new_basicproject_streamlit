@@ -1,0 +1,4 @@
+papermill
+jupyter
+pandas
+numpy

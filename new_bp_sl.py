@@ -370,22 +370,21 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
 
     return pd.DataFrame(valid_subway_pairs), pd.DataFrame(valid_school_pairs), m
 
-def main():
-    st.title("서울 매물-지하철/학교 도보 거리 분석")
 
-    df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
+st.title("서울 매물-지하철/학교 도보 거리 분석")
 
-    st.subheader("지하철 도보 800m 이내 매물 리스트")
-    st.dataframe(df_subway)
+df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
-    st.subheader("학교 도보 800m 이내 매물 리스트")
-    st.dataframe(df_school)
+st.subheader("지하철 도보 800m 이내 매물 리스트")
+st.dataframe(df_subway)
 
-    st.subheader("지도")
-    st_data = st_folium(folium_map, width=700, height=500)
+st.subheader("학교 도보 800m 이내 매물 리스트")
+st.dataframe(df_school)
 
-if __name__ == "__main__":
-    main()
+st.subheader("지도")
+st_data = st_folium(folium_map, width=700, height=500)
+
+
 
 
 

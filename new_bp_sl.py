@@ -178,6 +178,7 @@ import time
 import json
 import os
 
+# 여기 카카오
 # ① 카카오 API 키 설정
 KAKAO_REST_API_KEY = "58a94e08cd433f0a789ddee57624f990"
 
@@ -288,3 +289,5 @@ gdf_estate.plot(ax=ax, color='blue', markersize=10, label='Real Estate')
 ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=18)
 ax.legend()
 st.pyplot(fig)
+
+print(filtered_real_estate.columns)

@@ -81,10 +81,11 @@ table_data = {
     ]
 }
 
-
+df_info = pd.DataFrame(table_data)
+df_info = df_info.reset_index(drop=True)
 
 st.write("📊 활용 지표 설명")
-st.dataframe(table_data.reset_index(drop=True))
+st.dataframe(df_info)
 st.write("⇒ 모든 지표값이 모두 없는(결측치인) 법정동은 제거합니다.")
 st.write("""2. 병원의 중요도를 다르게 보고 가중치를 부여합니다:
 - 일반 병원 수는 그대로 사용

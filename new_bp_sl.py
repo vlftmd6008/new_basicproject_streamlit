@@ -373,6 +373,8 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
 
 st.title("서울 매물-지하철/학교 도보 거리 분석")
 
+subway_info, school_info = load_data()
+
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
 st.subheader("지하철 도보 800m 이내 매물 리스트")
@@ -383,7 +385,6 @@ st.dataframe(df_school)
 
 st.subheader("지도")
 st_data = st_folium(folium_map, width=700, height=500)
-
 
 
 

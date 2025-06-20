@@ -143,3 +143,18 @@ if st.button("📋 결과 보기", key="show_result3_button"):
 
 if st.session_state["show_result3"]:
     st.dataframe(filtered_real_estate.head(30))
+
+st.write("## 다음으로 위의 필터링된 매물 리스트에서 가장 가까운 지하철역과 학교에 \
+         도보 10분(800m) 이내로 갈 수 있는 매물들만 뽑아보겠습니다.")
+
+
+
+import papermill as pm
+filtered_real_estate.to_csv("filtered_real_estate.csv", index=False)
+pm.execute_notebook(
+    input_path="bp_sl.ipynb",
+    output_path="bp_sl.ipynb",
+    parameters=dict(input_file="filtered_real_estate.csv")
+)
+
+result_df = pd.read_csv("filtered_subway.csv")

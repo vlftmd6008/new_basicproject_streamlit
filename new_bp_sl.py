@@ -179,11 +179,24 @@ import json
 import os
 
 # 여기 카카오
-# ① 카카오 API 키 설정
-KAKAO_REST_API_KEY = "58a94e08cd433f0a789ddee57624f990"
+import requests
+import json
+import os
 
-# ② 주소 → 위경도 변환 함수 (단일 요청용)
-def get_coords_from_address(address, api_key):
+KAKAO_REST_API_KEY = "58a94e08cd433f0a789ddee57624f990"
+CACHE_PATH = "coord_cache.json"
+
+# 캐시 로드
+if os.path.exists(CACHE_PATH):
+    with open(CACHE_PATH, "r", encoding="utf-8") as f:
+        coord_cache = json.load(f)
+else:
+    coord_cache = {}
+
+def get_coords_from_address(address, api_key, cache):
+    if address in cache:
+        return cache[address]
+
     url = "https://dapi.kakao.com/v2/local/search/address.json"
     headers = {"Authorization": f"KakaoAK {api_key}"}
     params = {"query": address}
@@ -193,62 +206,31 @@ def get_coords_from_address(address, api_key):
             data = res.json()
             if data['documents']:
                 first = data['documents'][0]
-                lat = float(first['y'])  # 위도
-                lng = float(first['x'])  # 경도
+                lat = float(first['y'])
+                lng = float(first['x'])
+                cache[address] = (lat, lng)
                 return lat, lng
-    except:
-        pass
+    except Exception as e:
+        print(f"Error for address {address}: {e}")
     return None, None
 
-# ③ 캐시 파일 로드
-CACHE_PATH = "coord_cache.json"
-if os.path.exists(CACHE_PATH):
-    with open(CACHE_PATH, "r", encoding="utf-8") as f:
-        coord_cache = json.load(f)
-else:
-    coord_cache = {}
+lat_list = []
+lng_list = []
 
-# ④ 주소 리스트 준비 (예시 DataFrame)
-st.title("주소 → 좌표 변환기")
+for addr in filtered_real_estate['address']:
+    lat, lng = get_coords_from_address(addr, KAKAO_REST_API_KEY, coord_cache)
+    lat_list.append(lat)
+    lng_list.append(lng)
 
-uploaded = st.file_uploader("CSV 업로드 (address 컬럼 필요)", type="csv")
+filtered_real_estate['위도'] = lat_list
+filtered_real_estate['경도'] = lng_list
 
-if uploaded is not None:
-    df = pd.read_csv(uploaded)
+# 캐시 저장
+with open(CACHE_PATH, "w", encoding="utf-8") as f:
+    json.dump(coord_cache, f, ensure_ascii=False, indent=2)
 
-    if "address" not in df.columns:
-        st.error("❌ 'address' 컬럼이 없습니다.")
-        st.stop()
+st.dataframe(filtered_real_estate)
 
-    lat_list = []
-    lng_list = []
-    progress = st.progress(0, text="주소 변환 중...")
-
-    for i, addr in enumerate(df['address']):
-        if addr in coord_cache:
-            lat, lng = coord_cache[addr]
-        else:
-            lat, lng = get_coords_from_address(addr, KAKAO_REST_API_KEY)
-            coord_cache[addr] = [lat, lng]
-            time.sleep(0.1)  # 너무 빠른 호출 방지
-
-        lat_list.append(lat)
-        lng_list.append(lng)
-        progress.progress((i + 1) / len(df), text=f"{i + 1} / {len(df)} 변환 완료")
-
-    df['위도'] = lat_list
-    df['경도'] = lng_list
-
-    # ⑤ 캐시 저장
-    with open(CACHE_PATH, "w", encoding="utf-8") as f:
-        json.dump(coord_cache, f, ensure_ascii=False, indent=2)
-
-    st.success("✅ 좌표 변환 완료")
-    st.dataframe(df)
-
-    # ⑥ 다운로드 제공
-    csv = df.to_csv(index=False).encode('utf-8-sig')
-    st.download_button("📥 CSV 다운로드", csv, "converted_with_coords.csv", "text/csv")
 
 
 

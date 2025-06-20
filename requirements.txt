@@ -5,3 +5,4 @@ papermill
 jupyter
 openpyxl
 shapely
+geopandas

@@ -157,4 +157,5 @@ pm.execute_notebook(
     parameters=dict(input_file="filtered_real_estate.csv")
 )
 
-result_df = pd.read_csv("filtered_subway.csv")
+filtered_subway = pd.read_csv("filtered_subway.csv")
+st.dataframe(filtered_subway)

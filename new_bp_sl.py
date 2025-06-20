@@ -250,3 +250,41 @@ if uploaded is not None:
     st.download_button("📥 CSV 다운로드", csv, "converted_with_coords.csv", "text/csv")
 
 
+
+# SHP 파일로 변환
+from shapely.geometry import Point
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+
+geometry = [Point(xy) for xy in zip(filtered_real_estate['경도'], filtered_real_estate['위도'])]
+gdf_points = gpd.GeoDataFrame(filtered_real_estate, geometry=geometry, crs="EPSG:4326")
+gdf_points = gdf_points.to_crs(epsg=5179)
+gdf_points.to_file("real_estate_points_5179.shp", encoding="euc-kr")
+gdf_estate = gpd.read_file("real_estate_points_5179.shp")
+
+geometry1 = [Point(xy) for xy in zip(subway["역경도"], subway["역위도"])]
+gdf_points1 = gpd.GeoDataFrame(subway, geometry=geometry1, crs="EPSG:4326")
+gdf_points1 = gdf_points1.to_crs(epsg=5179)
+gdf_points1.to_file("seoul_sub_points_5179.shp", encoding="euc-kr")
+gdf_subway = gpd.read_file("seoul_sub_points_5179.shp")
+
+geometry2 = [Point(xy) for xy in zip(school["경도"], school["위도"])]
+gdf_points2 = gpd.GeoDataFrame(school, geometry=geometry2, crs="EPSG:4326")
+gdf_points2 = gdf_points2.to_crs(epsg=5179)
+gdf_points2.to_file("seoul_school_points_5179.shp", encoding="euc-kr")
+gdf_school = gpd.read_file("seoul_school_points_5179.shp")
+
+
+gdf_boundary = gpd.read_file("seoul_emd.shp", encoding='euc-kr')
+gdf_boundary = gdf_boundary.to_crs(epsg=5179)
+
+fig, ax = plt.subplots(figsize=(16, 16))
+gdf_boundary.plot(ax=ax, edgecolor='gray', facecolor='none', linewidth=0.5)
+gdf_subway.plot(ax=ax, color='red', markersize=10, label='Subway')
+gdf_school.plot(ax=ax, color='green', markersize=10, label='School')
+gdf_estate.plot(ax=ax, color='blue', markersize=10, label='Real Estate')
+
+ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=18)
+ax.legend()
+st.pyplot(fig)

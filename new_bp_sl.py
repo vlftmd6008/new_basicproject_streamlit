@@ -147,15 +147,22 @@ if st.session_state["show_result3"]:
 st.write("## 다음으로 위의 필터링된 매물 리스트에서 가장 가까운 지하철역과 학교에 \
          도보 10분(800m) 이내로 갈 수 있는 매물들만 뽑아보겠습니다.")
 
+# 3. 위치 데이터 이용_경로 계산
+## 지하철역 위치 데이터 불러오기
+import pandas as pd
+filtered_real_estate = pd.read_csv(input_file)
+
+df_sub_addr = pd.read_excel('전체_도시철도역사정보_20250417.xlsx')
+df_sub_addr = df_sub_addr[df_sub_addr['운영기관명'].str.contains('서울')]
+df_sub_addr.loc[:, 'CGG_NM'] = df_sub_addr['역사도로명주소'].str.extract(r'([가-힣]+구)')
+df_sub_addr.loc[:, 'STDG_NM'] = df_sub_addr['역사도로명주소'].str.extract(r'\(([^,()]+동)')
+subway = df_sub_addr[['CGG_NM', 'STDG_NM', '역사명', '역위도', '역경도']]
+subway = subway.drop_duplicates(subset='역사명')
+
+filtered_subway = subway[
+    (subway['CGG_NM'].isin(filtered_real_estate['CGG_NM'])) &
+    (subway['STDG_NM'].isin(filtered_real_estate['STDG_NM']))
+]
 
 
-import papermill as pm
-filtered_real_estate.to_csv("filtered_real_estate.csv", index=False)
-pm.execute_notebook(
-    input_path="bp_sl.ipynb",
-    output_path="bp_sl_output.ipynb",
-    parameters=dict(input_file="filtered_real_estate.csv")
-)
-
-filtered_subway = pd.read_csv("filtered_subway.csv")
-st.dataframe(filtered_subway)
+filtered_subway.to_csv("filtered_subway.csv", index=False)

@@ -125,7 +125,7 @@ if "show_result3" not in st.session_state:
 if st.button("📋 결과 보기", key="show_result3_button"):
     st.session_state["show_result3"] = True
 if st.session_state["show_result3"]:
-    st.dataframe(filtered_real_estate.head(N))
+    st.dataframe(filtered_real_estate)
 
 st.markdown(
     "### 3️⃣ 가장 가까운 지하철, 학교까지 도보 10분 내 매물로 필터링 ➡️ <span style='color:blue; font-weight:bold;'>최종 매물 추천 리스트</span>",
@@ -354,7 +354,7 @@ st.write("#### 🚊 지하철 도보 10분(800m) 이내 매물 리스트")
 st.dataframe(df_subway)
 st.write("#### 📚 학교 도보 10분(800m) 이내 매물 리스트")
 st.dataframe(df_school)
-sr.write(f"### {name}님께 추천드리는 최종 매물 추천 리스트입니다:안아주는_얼굴:")
+st.write(f"### {name}님께 추천드리는 최종 매물 추천 리스트입니다🤗")
 st.write("#### 📊 학교와 지하철 모두 도보 800m 이내 매물 리스트")
 st.dataframe(final_real_estate)
 st.write("지도")

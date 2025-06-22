@@ -21,12 +21,13 @@ st.write("""
 3. 각 연도별 거래건에 대해 누적 상승률을 계산해서 2024년 가격으로 보정
 4. 모든 거래 데이터에 보정된 가격(컬럼명: THING_AMT_2024) 추가""")
 st.write("또한, 방 개수와 신축 여부의 기준을 알려드리겠습니다.")
-st.write("""🔢 방 개수 구하기_건축 면적(컬럼명: ARCH_AREA) 기준
+st.markdown("""🔢 **방 개수 구하기_건축 면적(컬럼명: ARCH_AREA) 기준**
 - 30㎡ 이하 **→** 방 1개
 - 30㎡ 초과 ~ 70㎡ 이하 **→** 방 2개
 - 70㎡ 초과 ~ 100㎡ 이하 **→** 방 3개
 - 100㎡ 초과 **→** 방 4개 이상
-🆕 신축 여부 구하기_건축 연도(컬럼명: ARCH_YR) 기준
+         
+🆕 **신축 여부 구하기_건축 연도(컬럼명: ARCH_YR) 기준**
 - 2019년부터 2024년까지에 지어진 건물 **→** 신축
 - 그 외 **→** 구축""")
 st.write(f"### 1️⃣ {name}님이 원하는 기준(가격, 방 개수, 건물 종류, 신축 여부)으로 필터링")
@@ -65,9 +66,10 @@ st.write(f"#### 다음으로 {name}님이 원하시는 N개의 상위 법정동 
 st.write("저희는 서울시의 법정동 단위로 다양한 생활 인프라 지표(학원, 유흥주점, 대규모 점포, 병원)를 집계하고, \
          이를 병합하여 지표가 하나라도 존재하는 유효한 법정동 리스트 만들었습니다.\
          상위 법정동 정렬 흐름을 요약해드리자면")
-st.write(""" ✓ 상위 법정동 정렬 흐름 요약
+st.markdown(""" ✓ **상위 법정동 정렬 흐름 요약**
+         
 🔷 **1.** 서울시의 법정동을 기준으로, 여러 외부 데이터를 병합합니다.
-병합되는 주요 데이터들은 다음과 같습니다:""")
+병합되는 주요 데이터들은 다음과 같습니다.""")
 table_data = {
     "항목": [
         "`academy`",
@@ -92,20 +94,23 @@ st.write("""🔷 **2.** 병원의 중요도를 다르게 보고 가중치를 부
 - 2차 병원 수는 5배
 - 3차 병원 수는 20배
 이렇게 가중치를 적용해 총 병원 지표(컬럼명: t_hospital)를 계산합니다.""")
-st.write(":🔷 **3.** 각 지표가 얼마나 유의미한지를 데이터 자체에서 자동으로 판단해 가중치를 계산합니다.")
+st.markdown("🔷 **3.** 각 지표가 얼마나 유의미한지를 데이터 자체에서 자동으로 판단해 가중치를 계산합니다.")
 st.markdown("""
 🔸 **Step 1. 정규화 (min-max scaling)**
 - 모든 지표를 0~1 범위로 정규화하여 비교 가능하도록 만듭니다.
+            
 🔸 **Step 2. 엔트로피 값 계산**
 - 각 지표의 불확실성을 계산합니다.
 - 엔트로피 값이 높으면 → 다양성 ↓ → 구별력이 낮음
+            
 🔸 **Step 3. 다양성(D) 계산**
 - D = 1 - 엔트로피
 - 다양성이 높을수록 정보량이 많은 지표라고 판단
+            
 🔸 **Step 4. 최종 가중치 계산**
 - 전체 다양성 합계에서 비율을 나눠 각 지표의 **가중치 벡터 w**를 구합니다.
 """)
-st.write("""🔷 **4.** 계산된 가중치를 활용해, 각 법정동의 종합 점수(score)를 구합니다:
+st.markdown("""🔷 **4.** 계산된 가중치를 활용해, 각 법정동의 종합 점수(score)를 구합니다:
 - 유흥주점 수는 감점 요소이기 때문에 마이너스(-)로 계산합니다.
 점수가 높은 순으로 정렬합니다.""")
 topN = pd.read_csv("topN.csv", encoding='utf-8-sig')
@@ -114,14 +119,18 @@ top = topN.head(N)
 st.write(f"다음은 상위 N개의 법정동 리스트입니다.")
 st.dataframe(top)
 filtered_real_estate = pd.merge(df_final, top, how='inner', on=['CGG_NM', 'STDG_NM'])
-st.write(f"####📊 {name}님이 원하시는 상위 N개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
+st.write(f"#### 📊 {name}님이 원하시는 상위 N개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
 if "show_result3" not in st.session_state:
     st.session_state["show_result3"] = False
 if st.button("📋 결과 보기", key="show_result3_button"):
     st.session_state["show_result3"] = True
 if st.session_state["show_result3"]:
     st.dataframe(filtered_real_estate.head(N))
-st.write("### 3️⃣ 가장 가까운 지하철, 학교까지 도보 10분 내 매물로 필터링 ➡️ **최종 매물 추천 리스트**")
+
+st.markdown(
+    "### 3️⃣ 가장 가까운 지하철, 학교까지 도보 10분 내 매물로 필터링 ➡️ <span style='color:blue; font-weight:bold;'>최종 매물 추천 리스트</span>",
+    unsafe_allow_html=True
+)
 st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 가까운 지하철역과 학교까지 \
          도보 10분(800m) 이내로 갈 수 있는 매물들만 뽑아보겠습니다.")
 # 3. 위치 데이터 이용_경로 계산
@@ -200,7 +209,6 @@ filtered_real_estate['경도'] = lng_list
 with open(CACHE_PATH, "w", encoding="utf-8") as f:
     json.dump(coord_cache, f, ensure_ascii=False, indent=2)
 
-st.dataframe(filtered_real_estate)
 
 
 
@@ -209,6 +217,7 @@ st.dataframe(filtered_real_estate)
 from shapely.geometry import Point
 import geopandas as gpd
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 
 
 geometry = [Point(xy) for xy in zip(filtered_real_estate['경도'], filtered_real_estate['위도'])]
@@ -235,11 +244,18 @@ gdf_boundary = gdf_boundary.to_crs(epsg=5179)
 
 fig, ax = plt.subplots(figsize=(16, 16))
 gdf_boundary.plot(ax=ax, edgecolor='gray', facecolor='none', linewidth=0.5)
-gdf_subway.plot(ax=ax, color='red', markersize=30, label='Subway')
-gdf_school.plot(ax=ax, color='green', markersize=30, label='School')
-gdf_estate.plot(ax=ax, color='blue', markersize=100, label='Real Estate')
+gdf_subway.plot(ax=ax, color='red', markersize=30, label='지하철')
+gdf_school.plot(ax=ax, color='green', markersize=30, label='학교')
+gdf_estate.plot(ax=ax, color='blue', markersize=100, label='부동산')
+
+
+font_path = "NanumGothic.ttf"
+font_prop = fm.FontProperties(fname=font_path)
+plt.rcParams['font.family'] = font_prop.get_name()
+plt.rcParams['axes.unicode_minus'] = False
 
 ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=18)
+ax.legend(loc='upper right', fontsize=12, title="범례")
 st.pyplot(fig)
 
 

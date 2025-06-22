@@ -116,7 +116,7 @@ st.markdown("""🔷 **4.** 계산된 가중치를 활용해, 각 법정동의 �
 topN = pd.read_csv("topN.csv", encoding='utf-8-sig')
 N = st.number_input(f"{name}님이 원하시는 상위 법정동 개수를 선택해주세요. (예: 5, 10)", value=10)
 top = topN.head(N)
-st.write(f"다음은 상위 N개의 법정동 리스트입니다.")
+st.write(f"다음은 상위 {N}개의 법정동 리스트입니다.")
 st.dataframe(top)
 filtered_real_estate = pd.merge(df_final, top, how='inner', on=['CGG_NM', 'STDG_NM'])
 st.write(f"#### 📊 {name}님이 원하시는 상위 {N}개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")

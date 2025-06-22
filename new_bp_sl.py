@@ -258,7 +258,7 @@ legend.get_title().set_fontproperties(font_prop)
 for text in legend.get_texts():
     text.set_fontproperties(font_prop)
 
-ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=50, fontproperties=font_prop)
+ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=30, fontproperties=font_prop)
 st.pyplot(fig)
 
 st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 가까운 지하철역과 학교까지 \
@@ -349,18 +349,19 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
                                   icon=folium.Icon(color="darkgreen", icon="school")).add_to(m)
         except Exception as e:
             st.warning(f"학교 경로 오류: {origin_school} → {destination} / {e}")
-    # 범례 추가
     legend_html = """
     <div style="
         position: fixed; 
-        bottom: 50px; left: 50px; width: 200px; height: 150px; 
+        top: 50px; left: 50px; width: 120px; height: 90px; 
         background-color: white; 
-        border:2px solid grey; 
+        border:1.5px solid grey; 
         z-index:9999; 
-        font-size:14px;
-        padding: 10px;
+        font-size:11px;
+        padding: 6px;
+        box-shadow: 1.5px 1.5px 4px rgba(0,0,0,0.25);
+        line-height: 1.2;
         ">
-    <b>🗺️ 범례</b><br>
+    <b style="font-size:12px;">🗺️ 범례</b><br>
     <span style="color:blue;">■</span> 지하철 경로<br>
     <span style="color:purple;">■</span> 학교 경로<br>
     <span style="color:red;">🏠</span> 매물<br>

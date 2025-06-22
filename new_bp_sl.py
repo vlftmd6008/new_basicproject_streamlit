@@ -119,7 +119,7 @@ top = topN.head(N)
 st.write(f"다음은 상위 N개의 법정동 리스트입니다.")
 st.dataframe(top)
 filtered_real_estate = pd.merge(df_final, top, how='inner', on=['CGG_NM', 'STDG_NM'])
-st.write(f"#### 📊 {name}님이 원하시는 상위 N개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
+st.write(f"#### 📊 {name}님이 원하시는 상위 {N}개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
 if "show_result3" not in st.session_state:
     st.session_state["show_result3"] = False
 if st.button("📋 결과 보기", key="show_result3_button"):

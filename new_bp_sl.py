@@ -352,7 +352,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     legend_html = """
     <div style="
         position: fixed; 
-        top: 50px; left: 50px; width: 120px; height: 90px; 
+        top: 50px; right: 50px; width: 120px; height: 90px; 
         background-color: white; 
         border:1.5px solid grey; 
         z-index:9999; 

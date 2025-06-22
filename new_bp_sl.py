@@ -131,8 +131,7 @@ st.markdown(
     "### 3️⃣ 가장 가까운 지하철, 학교까지 도보 10분 내 매물로 필터링 ➡️ <span style='color:blue; font-weight:bold;'>최종 매물 추천 리스트</span>",
     unsafe_allow_html=True
 )
-st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 가까운 지하철역과 학교까지 \
-         도보 10분(800m) 이내로 갈 수 있는 매물들만 뽑아보겠습니다.")
+
 # 3. 위치 데이터 이용_경로 계산
 ## 지하철역 위치 데이터 불러오기
 import openpyxl
@@ -262,7 +261,8 @@ for text in legend.get_texts():
 ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=50, fontproperties=font_prop)
 st.pyplot(fig)
 
-
+st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 가까운 지하철역과 학교까지 \
+         도보 10분(800m) 이내로 갈 수 있는 매물들만 뽑아보겠습니다.")
 
 
 
@@ -349,7 +349,29 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
                                   icon=folium.Icon(color="darkgreen", icon="school")).add_to(m)
         except Exception as e:
             st.warning(f"학교 경로 오류: {origin_school} → {destination} / {e}")
+    # 범례 추가
+    legend_html = """
+    <div style="
+        position: fixed; 
+        bottom: 50px; left: 50px; width: 200px; height: 150px; 
+        background-color: white; 
+        border:2px solid grey; 
+        z-index:9999; 
+        font-size:14px;
+        padding: 10px;
+        ">
+    <b>🗺️ 범례</b><br>
+    <span style="color:blue;">■</span> 지하철 경로<br>
+    <span style="color:purple;">■</span> 학교 경로<br>
+    <span style="color:red;">🏠</span> 매물<br>
+    <span style="color:green;">🚉</span> 지하철역<br>
+    <span style="color:darkgreen;">🏫</span> 학교<br>
+    </div>
+    """
+    m.get_root().html.add_child(folium.Element(legend_html))
+    
     return pd.DataFrame(valid_subway_pairs), pd.DataFrame(valid_school_pairs), m
+
 st.write("#### 서울 매물-지하철/학교 도보 거리")
 subway_info, school_info = load_data()
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)

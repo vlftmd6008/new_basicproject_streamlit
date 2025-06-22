@@ -242,6 +242,11 @@ gdf_school = gpd.read_file("seoul_school_points_5179.shp")
 gdf_boundary = gpd.read_file("seoul_emd.shp", encoding='euc-kr')
 gdf_boundary = gdf_boundary.to_crs(epsg=5179)
 
+font_path = "NanumGothic.ttf"
+font_prop = fm.FontProperties(fname=font_path)
+plt.rcParams['font.family'] = font_prop.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+
 fig, ax = plt.subplots(figsize=(16, 16))
 gdf_boundary.plot(ax=ax, edgecolor='gray', facecolor='none', linewidth=0.5)
 gdf_subway.plot(ax=ax, color='red', markersize=30, label='지하철')
@@ -249,12 +254,12 @@ gdf_school.plot(ax=ax, color='green', markersize=30, label='학교')
 gdf_estate.plot(ax=ax, color='blue', markersize=100, label='부동산')
 
 
-font_path = "NanumGothic.ttf"
-font_prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()
-plt.rcParams['axes.unicode_minus'] = False
+legend = ax.legend(loc='upper right', fontsize=12, title="범례")
+legend.get_title().set_fontproperties(font_prop)
+for text in legend.get_texts():
+    text.set_fontproperties(font_prop)
 
-ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=18)
+ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=18, fontproperties=font_prop)
 ax.legend(loc='upper right', fontsize=12, title="범례")
 st.pyplot(fig)
 

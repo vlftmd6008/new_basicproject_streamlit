@@ -118,10 +118,8 @@ st.write("""4. 계산된 가중치를 활용해, 각 법정동의 종합 점수(
 - 유흥주점 수는 감점 요소이기 때문에 마이너스(-)로 계산합니다.
 점수가 높은 순으로 정렬합니다.""")
 
-topN = pd.read_csv("topN.csv", encoding='utf-8-sig')
-N = st.number_input(f"## {name}님이 원하시는 상위 법정동의 개수를 선택해주세요. (예: 5, 10)", value=10)
-top = topN.head(N)
-top = pd.DataFrame(top)
+top20 = pd.read_csv("top20.csv", encoding='utf-8-sig')
+st.write("다음은 상위 20개 법정동 리스트입니다.")
 
 if "show_result2" not in st.session_state:
     st.session_state["show_result2"] = False
@@ -130,10 +128,10 @@ if st.button("📋 결과 보기", key="show_result2_button"):
     st.session_state["show_result2"] = True
 
 if st.session_state["show_result2"]:
-    st.dataframe(top)
+    st.dataframe(top20)
 
 filtered_real_estate = pd.merge(df_final, top, how='inner', on=['CGG_NM', 'STDG_NM'])
-st.write(f"### {name}님이 원하시는 상위 {N}개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
+st.write(f"### {name}님이 원하시는 상위 20개 법정동 내에서 가격, 방 개수, 건물 종류, 신축 여부로 필터링된 매물 리스트:")
 
 if "show_result3" not in st.session_state:
     st.session_state["show_result3"] = False

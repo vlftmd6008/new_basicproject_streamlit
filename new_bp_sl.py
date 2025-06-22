@@ -259,8 +259,8 @@ legend.get_title().set_fontproperties(font_prop)
 for text in legend.get_texts():
     text.set_fontproperties(font_prop)
 
-ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=18, fontproperties=font_prop)
-ax.legend(loc='upper right', fontsize=12, title="범례")
+ax.set_title("서울시 지하철·학교·부동산 위치", fontsize=50, fontproperties=font_prop)
+ax.legend(loc='upper right', fontsize=12, title="범례", fontproperties=font_prop)
 st.pyplot(fig)
 
 

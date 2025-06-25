@@ -291,28 +291,27 @@ MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
 
 
-# --- 2. 지하철/학교 데이터 불러오기 함수 ---
+import folium
+from streamlit_folium import st_folium
+# Mapbox API 키
+
 def load_data():
     gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
     subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))
     gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
     school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
     return subway_info, school_info
-
-# --- 3. 도보거리 계산 및 지도 생성 함수 ---
 def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     valid_subway_pairs = []
     valid_school_pairs = []
     m = folium.Map(location=[37.5665, 126.9780], zoom_start=12)
-
     for idx, row in filtered_real_estate.iterrows():
         dest_lat = row['위도']
         dest_lon = row['경도']
         address = row['address']
         if dest_lat == 0.0 or dest_lon == 0.0:
             continue
-
-        # 지하철 최단거리 찾기
+        # 지하철 처리
         closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         subway_lon, subway_lat, subway_name = closest_subway
         origin_subway = f"{subway_lon},{subway_lat}"
@@ -335,16 +334,17 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
                         '도보거리(m)': round(distance)
                     })
                     coords = data['routes'][0]['geometry']['coordinates']
-                    folium.PolyLine(locations=[[lat, lon] for lon, lat in coords],
-                                    color="blue", weight=3, opacity=0.7).add_to(m)
+                    folium.PolyLine(
+                        locations=[[lat, lon] for lon, lat in coords],
+                        color="blue", weight=3, opacity=0.7
+                    ).add_to(m)
                     folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
                                   icon=folium.Icon(color="red", icon="home")).add_to(m)
                     folium.Marker([subway_lat, subway_lon], popup=f"지하철: {subway_name}",
                                   icon=folium.Icon(color="green", icon="train")).add_to(m)
         except Exception as e:
             st.warning(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
-
-        # 학교 최단거리 찾기
+        # 학교 처리
         closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         school_lon, school_lat, school_name = closest_school
         origin_school = f"{school_lon},{school_lat}"
@@ -360,16 +360,16 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
                         '도보거리(m)': round(distance)
                     })
                     coords = data['routes'][0]['geometry']['coordinates']
-                    folium.PolyLine(locations=[[lat, lon] for lon, lat in coords],
-                                    color="purple", weight=3, opacity=0.7).add_to(m)
+                    folium.PolyLine(
+                        locations=[[lat, lon] for lon, lat in coords],
+                        color="purple", weight=3, opacity=0.7
+                    ).add_to(m)
                     folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
                                   icon=folium.Icon(color="red", icon="home")).add_to(m)
                     folium.Marker([school_lat, school_lon], popup=f"학교: {school_name}",
                                   icon=folium.Icon(color="darkgreen", icon="school")).add_to(m)
         except Exception as e:
             st.warning(f"학교 경로 오류: {origin_school} → {destination} / {e}")
-
-    # 범례 추가
     legend_html = """
     <div style="
         position: fixed; 
@@ -391,51 +391,22 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     </div>
     """
     m.get_root().html.add_child(folium.Element(legend_html))
-
+    
     return pd.DataFrame(valid_subway_pairs), pd.DataFrame(valid_school_pairs), m
-
-
-
-
-
-
-
-# --- 4. 실행 파트 ---
 
 st.write("#### 서울 매물-지하철/학교 도보 거리")
 
 subway_info, school_info = load_data()
-
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
-
-df_subway = df_subway.rename(columns={'address': '매물주소'})
-df_school = df_school.rename(columns={'address': '매물주소'})
-st.write("df_subway.columns:", df_subway.columns.tolist())
-st.write("df_school.columns:", df_school.columns.tolist())
-
-
-
-
-
-
-
-
-
-
-# 매물주소 기준으로 지하철, 학교 도보 800m 이내 매물 필터링
 final_real_estate = pd.merge(df_subway, df_school, how='inner', on=['매물주소'])
-final_real_estate_df = filtered_real_estate[filtered_real_estate['address'].isin(final_real_estate['매물주소'])]
+final_real_estate_df = filtered_real_estate[(filtered_real_estate['address'].isin(final_real_estate['매물주소']))]
 
 st.write("#### 🚊 지하철 도보 10분(800m) 이내 매물 리스트")
 st.dataframe(df_subway)
-
 st.write("#### 📚 학교 도보 10분(800m) 이내 매물 리스트")
 st.dataframe(df_school)
-
 st.write(f"### {name}님께 추천드리는 최종 매물 추천 리스트입니다🤗")
-
 st.write("#### 📊 학교와 지하철 모두 도보 800m 이내 매물 리스트")
 st.dataframe(final_real_estate_df)
-
 st.write("지도")
 st_data = st_folium(folium_map, width=700, height=500)

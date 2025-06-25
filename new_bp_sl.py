@@ -163,12 +163,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
-MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
-
-st.write("KAKAO_REST_API_KEY:", KAKAO_REST_API_KEY)
-st.write("MAPBOX_TOKEN:", MAPBOX_TOKEN)
-
 
 
 import requests
@@ -285,8 +279,12 @@ st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 �
 
 import folium
 from streamlit_folium import st_folium
+
 # Mapbox API 키
+
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
+
+
 def load_data():
     gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
     subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))

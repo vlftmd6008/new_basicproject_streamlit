@@ -222,7 +222,7 @@ with open(CACHE_PATH, "w", encoding="utf-8") as f:
     json.dump(coord_cache, f, ensure_ascii=False, indent=2)
 
 
-
+st.dataframe(filtered_real_estate)
 
 
 # SHP 파일로 변환

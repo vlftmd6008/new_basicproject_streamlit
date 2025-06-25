@@ -320,6 +320,17 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
             "geometries": "geojson",
             "overview": "full"
         }
+
+        st.write("📍주소:", address)
+        st.write("  → 좌표:", dest_lon, dest_lat)
+        st.write("  → 지하철:", closest_subway)
+        st.write("  → 요청 URL:", url)
+        st.write("  → 응답 JSON:", data)
+
+
+
+
+
         try:
             response = requests.get(url, params=params)
             data = response.json()

@@ -285,13 +285,12 @@ load_dotenv()
 # Mapbox API 키
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
-# 지하철 데이터 로드 및 좌표 변환
-gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
-subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))
-
-# 학교 데이터 로드 및 좌표 변환
-gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
-school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
+def load_data():
+    gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
+    subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))
+    gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
+    school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
+    return subway_info, school_info
 
 # 결과 리스트 초기화
 valid_subway_pairs = []

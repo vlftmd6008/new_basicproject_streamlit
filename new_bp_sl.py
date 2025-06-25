@@ -285,15 +285,11 @@ import folium
 from streamlit_folium import st_folium
 
 
-
+# Mapbox API 키
 
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
 
-
-import folium
-from streamlit_folium import st_folium
-# Mapbox API 키
 
 def load_data():
     gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
@@ -301,6 +297,8 @@ def load_data():
     gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
     school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
     return subway_info, school_info
+
+
 def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     valid_subway_pairs = []
     valid_school_pairs = []
@@ -398,8 +396,18 @@ st.write("#### 서울 매물-지하철/학교 도보 거리")
 
 subway_info, school_info = load_data()
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
+
+st.dataframe(df_subway)
+st.dataframe(df_school)
+
+
 final_real_estate = pd.merge(df_subway, df_school, how='inner', on=['매물주소'])
 final_real_estate_df = filtered_real_estate[(filtered_real_estate['address'].isin(final_real_estate['매물주소']))]
+
+
+
+
+
 
 st.write("#### 🚊 지하철 도보 10분(800m) 이내 매물 리스트")
 st.dataframe(df_subway)

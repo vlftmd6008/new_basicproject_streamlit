@@ -408,7 +408,8 @@ subway_info, school_info = load_data()
 
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
-
+df_subway = df_subway.rename(columns={'address': '매물주소'})
+df_school = df_school.rename(columns={'address': '매물주소'})
 st.write("df_subway.columns:", df_subway.columns.tolist())
 st.write("df_school.columns:", df_school.columns.tolist())
 

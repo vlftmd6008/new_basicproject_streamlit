@@ -280,115 +280,134 @@ st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 �
 import folium
 from streamlit_folium import st_folium
 
-# Mapbox API 키
+load_dotenv()
 
+# Mapbox API 키
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
+# 지하철 데이터 로드 및 좌표 변환
+gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
+subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))
 
-def load_data():
-    gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
-    subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))
-    gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
-    school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
-    return subway_info, school_info
-def get_routes_and_map(filtered_real_estate, subway_info, school_info):
-    valid_subway_pairs = []
-    valid_school_pairs = []
-    m = folium.Map(location=[37.5665, 126.9780], zoom_start=12)
-    for idx, row in filtered_real_estate.iterrows():
-        dest_lat = row['위도']
-        dest_lon = row['경도']
-        address = row['address']
-        if dest_lat == 0.0 or dest_lon == 0.0:
-            continue
-        # 지하철 처리
-        closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
-        subway_lon, subway_lat, subway_name = closest_subway
-        origin_subway = f"{subway_lon},{subway_lat}"
-        destination = f"{dest_lon},{dest_lat}"
-        url = f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_subway};{destination}"
-        params = {
-            "access_token": MAPBOX_TOKEN,
-            "geometries": "geojson",
-            "overview": "full"
-        }
-        try:
-            response = requests.get(url, params=params)
-            data = response.json()
-            if 'routes' in data and data['routes']:
-                distance = data['routes'][0]['distance']
-                if distance <= 800:
-                    valid_subway_pairs.append({
-                        '매물주소': address,
-                        '지하철역': subway_name,
-                        '도보거리(m)': round(distance)
-                    })
-                    coords = data['routes'][0]['geometry']['coordinates']
-                    folium.PolyLine(
-                        locations=[[lat, lon] for lon, lat in coords],
-                        color="blue", weight=3, opacity=0.7
-                    ).add_to(m)
-                    folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
-                                  icon=folium.Icon(color="red", icon="home")).add_to(m)
-                    folium.Marker([subway_lat, subway_lon], popup=f"지하철: {subway_name}",
-                                  icon=folium.Icon(color="green", icon="train")).add_to(m)
-        except Exception as e:
-            st.warning(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
-        # 학교 처리
-        closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
-        school_lon, school_lat, school_name = closest_school
-        origin_school = f"{school_lon},{school_lat}"
-        try:
-            response = requests.get(f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_school};{destination}", params=params)
-            data = response.json()
-            if 'routes' in data and data['routes']:
-                distance = data['routes'][0]['distance']
-                if distance <= 800:
-                    valid_school_pairs.append({
-                        '매물주소': address,
-                        '학교': school_name,
-                        '도보거리(m)': round(distance)
-                    })
-                    coords = data['routes'][0]['geometry']['coordinates']
-                    folium.PolyLine(
-                        locations=[[lat, lon] for lon, lat in coords],
-                        color="purple", weight=3, opacity=0.7
-                    ).add_to(m)
-                    folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
-                                  icon=folium.Icon(color="red", icon="home")).add_to(m)
-                    folium.Marker([school_lat, school_lon], popup=f"학교: {school_name}",
-                                  icon=folium.Icon(color="darkgreen", icon="school")).add_to(m)
-        except Exception as e:
-            st.warning(f"학교 경로 오류: {origin_school} → {destination} / {e}")
+# 학교 데이터 로드 및 좌표 변환
+gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
+school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
 
-    df_subway = pd.DataFrame(valid_subway_pairs)
-    df_school = pd.DataFrame(valid_school_pairs)
-    
-    
-    
-    legend_html = """
-    <div style="
-        position: fixed; 
-        top: 50px; right: 50px; width: 120px; height: 90px; 
-        background-color: white; 
-        border:1.5px solid grey; 
-        z-index:9999; 
-        font-size:11px;
-        padding: 6px;
-        box-shadow: 1.5px 1.5px 4px rgba(0,0,0,0.25);
-        line-height: 1.2;
-        ">
-    <b style="font-size:12px;">🗺️ 범례</b><br>
-    <span style="color:blue;">■</span> 지하철 경로<br>
-    <span style="color:purple;">■</span> 학교 경로<br>
-    <span style="color:red;">🏠</span> 매물<br>
-    <span style="color:green;">🚉</span> 지하철역<br>
-    <span style="color:darkgreen;">🏫</span> 학교<br>
-    </div>
-    """
-    m.get_root().html.add_child(folium.Element(legend_html))
-    
-    return pd.DataFrame(valid_subway_pairs), pd.DataFrame(valid_school_pairs), m
+# 결과 리스트 초기화
+valid_subway_pairs = []
+valid_school_pairs = []
+
+# 지도 초기화 (서울 중심)
+m = folium.Map(location=[37.5665, 126.9780], zoom_start=12)
+
+for idx, row in filtered_real_estate.iterrows():
+    dest_lat = row['위도']
+    dest_lon = row['경도']
+    address = row['address']
+    if dest_lat == 0.0 or dest_lon == 0.0:
+        continue
+
+    # --- 지하철 처리 ---
+    closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
+    subway_lon, subway_lat, subway_name = closest_subway
+    origin_subway = f"{subway_lon},{subway_lat}"
+    destination = f"{dest_lon},{dest_lat}"
+    url = f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_subway};{destination}"
+    params = {
+        "access_token": MAPBOX_TOKEN,
+        "geometries": "geojson",
+        "overview": "full"
+    }
+    try:
+        response = requests.get(url, params=params)
+        data = response.json()
+        if 'routes' in data and data['routes']:
+            distance = data['routes'][0]['distance']  # meters
+            if distance <= 800:
+                valid_subway_pairs.append({
+                    '매물주소': address,
+                    '지하철역': subway_name,
+                    '도보거리(m)': round(distance)
+                })
+                # 지도에 경로, 마커 추가
+                coords = data['routes'][0]['geometry']['coordinates']
+                folium.PolyLine(
+                    locations=[[lat, lon] for lon, lat in coords],
+                    color="blue", weight=3, opacity=0.7
+                ).add_to(m)
+                folium.Marker(
+                    [dest_lat, dest_lon],
+                    popup=f"매물\n{address}",
+                    icon=folium.Icon(color="red", icon="home")
+                ).add_to(m)
+                folium.Marker(
+                    [subway_lat, subway_lon],
+                    popup=f"지하철: {subway_name}",
+                    icon=folium.Icon(color="green", icon="train")
+                ).add_to(m)
+    except Exception as e:
+        print(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
+
+    # --- 학교 처리 ---
+    closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
+    school_lon, school_lat, school_name = closest_school
+    origin_school = f"{school_lon},{school_lat}"
+    try:
+        response = requests.get(f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_school};{destination}", params=params)
+        data = response.json()
+        if 'routes' in data and data['routes']:
+            distance = data['routes'][0]['distance']
+            if distance <= 800:
+                valid_school_pairs.append({
+                    '매물주소': address,
+                    '학교': school_name,
+                    '도보거리(m)': round(distance)
+                })
+                # 지도에 경로, 마커 추가
+                coords = data['routes'][0]['geometry']['coordinates']
+                folium.PolyLine(
+                    locations=[[lat, lon] for lon, lat in coords],
+                    color="purple", weight=3, opacity=0.7
+                ).add_to(m)
+                folium.Marker(
+                    [dest_lat, dest_lon],
+                    popup=f"매물\n{address}",
+                    icon=folium.Icon(color="red", icon="home")
+                ).add_to(m)
+                folium.Marker(
+                    [school_lat, school_lon],
+                    popup=f"학교: {school_name}",
+                    icon=folium.Icon(color="darkgreen", icon="school")
+                ).add_to(m)
+    except Exception as e:
+        print(f"학교 경로 오류: {origin_school} → {destination} / {e}")
+
+# 데이터프레임으로 변환 후 출력
+df_subway = pd.DataFrame(valid_subway_pairs)
+df_school = pd.DataFrame(valid_school_pairs)
+legend_html = """
+<div style="
+    position: fixed; 
+    top: 50px; right: 50px; width: 120px; height: 90px; 
+    background-color: white; 
+    border:1.5px solid grey; 
+    z-index:9999; 
+    font-size:11px;
+    padding: 6px;
+    box-shadow: 1.5px 1.5px 4px rgba(0,0,0,0.25);
+    line-height: 1.2;
+    ">
+<b style="font-size:12px;">🗺️ 범례</b><br>
+<span style="color:blue;">■</span> 지하철 경로<br>
+<span style="color:purple;">■</span> 학교 경로<br>
+<span style="color:red;">🏠</span> 매물<br>
+<span style="color:green;">🚉</span> 지하철역<br>
+<span style="color:darkgreen;">🏫</span> 학교<br>
+</div>
+"""
+m.get_root().html.add_child(folium.Element(legend_html))
+
+
 
 st.write("#### 서울 매물-지하철/학교 도보 거리")
 

@@ -222,8 +222,6 @@ with open(CACHE_PATH, "w", encoding="utf-8") as f:
     json.dump(coord_cache, f, ensure_ascii=False, indent=2)
 
 
-st.dataframe(filtered_real_estate)
-
 
 # SHP 파일로 변환
 from shapely.geometry import Point
@@ -284,14 +282,11 @@ st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 �
 
 
 import folium
-
-from dotenv import load_dotenv
 from streamlit_folium import st_folium
 
 
-# 환경변수 로드
-load_dotenv()
-KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+
+
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
 
@@ -400,6 +395,11 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     return pd.DataFrame(valid_subway_pairs), pd.DataFrame(valid_school_pairs), m
 
 
+
+
+
+
+
 # --- 4. 실행 파트 ---
 
 st.write("#### 서울 매물-지하철/학교 도보 거리")
@@ -407,6 +407,17 @@ st.write("#### 서울 매물-지하철/학교 도보 거리")
 subway_info, school_info = load_data()
 
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
+
+
+st.write("df_subway.columns:", df_subway.columns.tolist())
+st.write("df_school.columns:", df_school.columns.tolist())
+
+
+
+
+
+
+
 
 
 

@@ -446,6 +446,11 @@ st.write("#### 서울 매물-지하철/학교 도보 거리")
 subway_info, school_info = load_data()
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
+
+st.write("df_subway columns:", df_subway.columns.tolist())
+st.write("df_school columns:", df_school.columns.tolist())
+
+
 # 매물주소 기준으로 지하철, 학교 도보 800m 이내 매물 필터링
 final_real_estate = pd.merge(df_subway, df_school, how='inner', on=['매물주소'])
 final_real_estate_df = filtered_real_estate[filtered_real_estate['address'].isin(final_real_estate['매물주소'])]

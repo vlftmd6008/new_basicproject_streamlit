@@ -291,49 +291,7 @@ load_dotenv()
 KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
-# --- 1. 카카오 API로 주소→위도경도 변환 및 캐시 처리 ---
-CACHE_PATH = "coord_cache.json"
 
-if os.path.exists(CACHE_PATH):
-    with open(CACHE_PATH, "r", encoding="utf-8") as f:
-        coord_cache = json.load(f)
-else:
-    coord_cache = {}
-
-def get_coords_from_address(address, api_key, cache):
-    if address in cache:
-        return cache[address]
-    url = "https://dapi.kakao.com/v2/local/search/address.json"
-    headers = {"Authorization": f"KakaoAK {api_key}"}
-    params = {"query": address}
-    try:
-        res = requests.get(url, headers=headers, params=params)
-        if res.status_code == 200:
-            data = res.json()
-            if data['documents']:
-                first = data['documents'][0]
-                lat = float(first['y'])
-                lng = float(first['x'])
-                cache[address] = (lat, lng)
-                return lat, lng
-    except Exception as e:
-        print(f"Error for address {address}: {e}")
-    return None, None
-
-# filtered_real_estate['위도'], ['경도'] 컬럼 생성 예시
-lat_list = []
-lng_list = []
-
-for addr in filtered_real_estate['address']:
-    lat, lng = get_coords_from_address(addr, KAKAO_REST_API_KEY, coord_cache)
-    lat_list.append(lat)
-    lng_list.append(lng)
-
-filtered_real_estate['위도'] = lat_list
-filtered_real_estate['경도'] = lng_list
-
-with open(CACHE_PATH, "w", encoding="utf-8") as f:
-    json.dump(coord_cache, f, ensure_ascii=False, indent=2)
 
 # --- 2. 지하철/학교 데이터 불러오기 함수 ---
 def load_data():
@@ -446,9 +404,6 @@ st.write("#### 서울 매물-지하철/학교 도보 거리")
 subway_info, school_info = load_data()
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
-
-st.write("df_subway columns:", df_subway.columns.tolist())
-st.write("df_school columns:", df_school.columns.tolist())
 
 
 # 매물주소 기준으로 지하철, 학교 도보 800m 이내 매물 필터링

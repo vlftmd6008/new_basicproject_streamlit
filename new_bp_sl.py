@@ -291,9 +291,11 @@ MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
 
 
+@st.cache_data
 def load_data():
     gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
     subway_info = list(zip(gdf_subway.geometry.x, gdf_subway.geometry.y, gdf_subway['역사명']))
+
     gdf_school = gpd.read_file("seoul_school_points_5179.shp").to_crs(epsg=4326)
     school_info = list(zip(gdf_school.geometry.x, gdf_school.geometry.y, gdf_school['학교명']))
     return subway_info, school_info
@@ -309,6 +311,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
         address = row['address']
         if dest_lat == 0.0 or dest_lon == 0.0:
             continue
+        
         # 지하철 처리
         closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         subway_lon, subway_lat, subway_name = closest_subway
@@ -343,6 +346,8 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
                                   icon=folium.Icon(color="green", icon="train")).add_to(m)
         except Exception as e:
             st.warning(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
+        
+        
         # 학교 처리
         closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         school_lon, school_lat, school_name = closest_school
@@ -402,8 +407,6 @@ df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subw
 
 
 final_real_estate = pd.merge(df_subway, df_school, how='inner', on=['매물주소'])
-final_real_estate_df = filtered_real_estate[(filtered_real_estate['address'].isin(final_real_estate['매물주소']))]
-
 
 
 
@@ -415,6 +418,6 @@ st.write("#### 📚 학교 도보 10분(800m) 이내 매물 리스트")
 st.dataframe(df_school)
 st.write(f"### {name}님께 추천드리는 최종 매물 추천 리스트입니다🤗")
 st.write("#### 📊 학교와 지하철 모두 도보 800m 이내 매물 리스트")
-st.dataframe(final_real_estate_df)
+st.dataframe(final_real_estate)
 st.write("지도")
 st_data = st_folium(folium_map, width=700, height=500)

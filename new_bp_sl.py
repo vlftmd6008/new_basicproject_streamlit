@@ -360,6 +360,12 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
                                   icon=folium.Icon(color="darkgreen", icon="school")).add_to(m)
         except Exception as e:
             st.warning(f"학교 경로 오류: {origin_school} → {destination} / {e}")
+
+    df_subway = pd.DataFrame(valid_subway_pairs)
+    df_school = pd.DataFrame(valid_school_pairs)
+    
+    
+    
     legend_html = """
     <div style="
         position: fixed; 

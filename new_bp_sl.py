@@ -130,11 +130,6 @@ if st.session_state["show_result3"]:
     st.dataframe(filtered_real_estate)
 
 
-st.write("KAKAO_REST_API_KEY:", KAKAO_REST_API_KEY)
-st.write("MAPBOX_TOKEN:", MAPBOX_TOKEN)
-
-
-
 st.markdown(
     "### 3️⃣ 가장 가까운 지하철, 학교까지 도보 10분 내 매물로 필터링 ➡️ <span style='color:blue; font-weight:bold;'>최종 매물 추천 리스트</span>",
     unsafe_allow_html=True
@@ -168,9 +163,11 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 
-
-
+st.write("KAKAO_REST_API_KEY:", KAKAO_REST_API_KEY)
+st.write("MAPBOX_TOKEN:", MAPBOX_TOKEN)
 
 
 

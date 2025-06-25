@@ -171,11 +171,9 @@ MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
 import requests
 import time
 import json
-import os
+
 # 여기 카카오
-import requests
-import json
-import os
+
 
 CACHE_PATH = "coord_cache.json"
 # 캐시 로드

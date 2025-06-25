@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+
 st.title("안녕하세요👋")
 st.markdown("## 저희는 <span style='color:blue; font-weight:bold;'>부동산플랜</span>😈입니다.", unsafe_allow_html=True)
 st.write("### 이 페이지에서 당신은 2018년부터 2024년까지의 서울시 부동산 실거래가 정보를 통해 데이터 기반의 매물 추천🏠📊을 받으실 수 있습니다.")
@@ -40,7 +41,9 @@ usg = st.selectbox("🏘️ 건물 종류를 선택해주세요",
 new_old = st.selectbox("🆕 신축 여부를 선택해주세요",
     ['신축', '구축'],
     index=1)
+
 import pandas as pd
+
 real_estate = pd.read_csv("real_estate.csv", encoding='utf-8-sig')
 def filter_by_price(df):
   return df[df['THING_AMT'] < y/10000]
@@ -86,6 +89,7 @@ table_data = {
 }
 
 df_info = pd.DataFrame(table_data)
+
 st.write("☑️ 활용 지표 설명")
 st.dataframe(df_info)
 st.write("⇒ 모든 지표값이 모두 없는(결측치인) 법정동은 제거합니다.")
@@ -138,6 +142,7 @@ st.markdown(
 # 3. 위치 데이터 이용_경로 계산
 ## 지하철역 위치 데이터 불러오기
 import openpyxl
+
 df_sub_addr = pd.read_excel('전체_도시철도역사정보_20250417.xlsx')
 df_sub_addr = df_sub_addr[df_sub_addr['운영기관명'].str.contains('서울')]
 df_sub_addr.loc[:, 'CGG_NM'] = df_sub_addr['역사도로명주소'].str.extract(r'([가-힣]+구)')
@@ -160,7 +165,7 @@ filtered_school = school[
 ]
 
 from dotenv import load_dotenv
-import os
+
 
 load_dotenv()
 
@@ -277,11 +282,9 @@ st.write("#### 다음으로 위의 필터링된 매물 리스트에서 가장 �
 
 
 
-import os
-import json
-import requests
+
 import folium
-from shapely.geometry import Point
+
 from dotenv import load_dotenv
 from streamlit_folium import st_folium
 
@@ -402,6 +405,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
 st.write("#### 서울 매물-지하철/학교 도보 거리")
 
 subway_info, school_info = load_data()
+
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
 

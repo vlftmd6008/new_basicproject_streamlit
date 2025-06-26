@@ -401,6 +401,11 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
 st.write("#### 서울 매물-지하철/학교 도보 거리")
 
 subway_info, school_info = load_data()
+
+st.dataframe(filtered_real_estate)
+st.dataframe(subway_info)
+st.dataframe(school_info)
+
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
 

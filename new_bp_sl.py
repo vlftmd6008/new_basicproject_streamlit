@@ -302,6 +302,7 @@ def load_data():
 
 
 def get_routes_and_map(filtered_real_estate, subway_info, school_info):
+    print("함수시작")
     valid_subway_pairs = []
     valid_school_pairs = []
     m = folium.Map(location=[37.5665, 126.9780], zoom_start=12)
@@ -311,7 +312,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
         address = row['address']
         if dest_lat == 0.0 or dest_lon == 0.0:
             continue
-        
+        print(valid_subway_pairs)
         # 지하철 처리
         closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         subway_lon, subway_lat, subway_name = closest_subway
@@ -326,6 +327,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
 
         try:
             response = requests.get(url, params=params)
+            print(response)
             data = response.json()
             if 'routes' in data and data['routes']:
                 distance = data['routes'][0]['distance']
@@ -347,7 +349,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
         except Exception as e:
             st.warning(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
         
-        
+
         
         # 학교 처리
         closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)

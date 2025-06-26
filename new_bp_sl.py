@@ -396,8 +396,8 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     """
     m.get_root().html.add_child(folium.Element(legend_html))
     
-    df_subway = pd.DataFrame(valid_subway_pairs, columns=["매물주소", "지하철역", "도보거리(m)"])
-    df_school = pd.DataFrame(valid_school_pairs, columns=["매물주소", "학교", "도보거리(m)"])
+    df_subway = pd.DataFrame(valid_subway_pairs)
+    df_school = pd.DataFrame(valid_school_pairs)
 
     return df_subway, df_school, m
 
@@ -405,9 +405,6 @@ st.write("#### 서울 매물-지하철/학교 도보 거리")
 
 subway_info, school_info = load_data()
 
-st.dataframe(filtered_real_estate.head())
-st.dataframe(subway_info)
-st.dataframe(school_info)
 
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 

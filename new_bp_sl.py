@@ -354,6 +354,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
         origin_school = f"{school_lon},{school_lat}"
         try:
             response = requests.get(f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_school};{destination}", params=params)
+            print(response)
             data = response.json()
             if 'routes' in data and data['routes']:
                 distance = data['routes'][0]['distance']
@@ -399,6 +400,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     df_subway = pd.DataFrame(valid_subway_pairs)
     df_school = pd.DataFrame(valid_school_pairs)
 
+
     return df_subway, df_school, m
 
 st.write("#### 서울 매물-지하철/학교 도보 거리")
@@ -408,8 +410,7 @@ subway_info, school_info = load_data()
 
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
-print(df_subway.shape)
-print(df_school.shape)
+st.dataframe(filtered_real_estate)
 
 
 st.dataframe(df_subway)

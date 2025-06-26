@@ -414,7 +414,7 @@ subway_info, school_info = load_data()
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
 
 
-final_real_estate = pd.merge(df_subway[:100], df_school[:100], how='inner', on=['매물주소'])
+final_real_estate = pd.merge(df_subway, df_school, how='inner', on=['매물주소'])
 
 
 

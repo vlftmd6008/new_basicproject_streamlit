@@ -164,10 +164,8 @@ filtered_school = school[
     (school['STDG_NM'].isin(filtered_real_estate['STDG_NM']))
 ]
 
-from dotenv import load_dotenv
 
 
-load_dotenv()
 
 
 import requests
@@ -175,7 +173,7 @@ import time
 import json
 
 # 여기 카카오
-KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+KAKAO_REST_API_KEY = st.secrets["KAKAO_REST_API_KEY"]
 
 CACHE_PATH = "coord_cache.json"
 # 캐시 로드

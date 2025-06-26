@@ -285,12 +285,6 @@ import folium
 from streamlit_folium import st_folium
 
 
-# Mapbox API 키
-
-MAPBOX_TOKEN = os.getenv("MAPBOX_TOKEN")
-
-
-
 @st.cache_data
 def load_data():
     gdf_subway = gpd.read_file("seoul_sub_points_5179.shp").to_crs(epsg=4326)
@@ -301,83 +295,90 @@ def load_data():
     return subway_info, school_info
 
 
+def get_kakao_walk_route(origin, destination):
+    url = "https://apis-navi.kakaomobility.com/v1/directions"
+    headers = {
+        "Authorization": f"KakaoAK {KAKAO_REST_API_KEY}"
+    }
+    params = {
+        "origin": f"{origin[0]},{origin[1]}",     # 경도,위도
+        "destination": f"{destination[0]},{destination[1]}",
+        "priority": "DISTANCE"
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+
 def get_routes_and_map(filtered_real_estate, subway_info, school_info):
-    st.write("함수시작")
+    st.write("함수 시작")
     valid_subway_pairs = []
     valid_school_pairs = []
     m = folium.Map(location=[37.5665, 126.9780], zoom_start=12)
+
     for idx, row in filtered_real_estate.iterrows():
         dest_lat = row['위도']
         dest_lon = row['경도']
         address = row['address']
         if dest_lat == 0.0 or dest_lon == 0.0:
             continue
-        st.write(valid_subway_pairs)
+
         # 지하철 처리
         closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         subway_lon, subway_lat, subway_name = closest_subway
-        origin_subway = f"{subway_lon},{subway_lat}"
-        destination = f"{dest_lon},{dest_lat}"
-        url = f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_subway};{destination}"
-        params = {
-            "access_token": MAPBOX_TOKEN,
-            "geometries": "geojson",
-            "overview": "full"
-        }
+        route_data = get_kakao_walk_route((subway_lon, subway_lat), (dest_lon, dest_lat))
 
-        try:
-            response = requests.get(url, params=params)
-            st.write(response)
-            data = response.json()
-            if 'routes' in data and data['routes']:
-                distance = data['routes'][0]['distance']
-                if distance <= 800:
-                    valid_subway_pairs.append({
-                        '매물주소': address,
-                        '지하철역': subway_name,
-                        '도보거리(m)': round(distance)
-                    })
-                    coords = data['routes'][0]['geometry']['coordinates']
-                    folium.PolyLine(
-                        locations=[[lat, lon] for lon, lat in coords],
-                        color="blue", weight=3, opacity=0.7
-                    ).add_to(m)
-                    folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
-                                  icon=folium.Icon(color="red", icon="home")).add_to(m)
-                    folium.Marker([subway_lat, subway_lon], popup=f"지하철: {subway_name}",
-                                  icon=folium.Icon(color="green", icon="train")).add_to(m)
-        except Exception as e:
-            st.warning(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
-        
+        if route_data and 'routes' in route_data:
+            sections = route_data['routes'][0]['sections']
+            distance = sum(sec['distance'] for sec in sections)
 
-        
+            if distance <= 800:
+                valid_subway_pairs.append({
+                    '매물주소': address,
+                    '지하철역': subway_name,
+                    '도보거리(m)': round(distance)
+                })
+
+                for section in sections:
+                    for road in section['roads']:
+                        coords = road['vertexes']
+                        coord_pairs = [[coords[i+1], coords[i]] for i in range(0, len(coords), 2)]
+                        folium.PolyLine(coord_pairs, color="blue", weight=3, opacity=0.7).add_to(m)
+
+                folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
+                              icon=folium.Icon(color="red", icon="home")).add_to(m)
+                folium.Marker([subway_lat, subway_lon], popup=f"지하철: {subway_name}",
+                              icon=folium.Icon(color="green", icon="train")).add_to(m)
+
         # 학교 처리
         closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         school_lon, school_lat, school_name = closest_school
-        origin_school = f"{school_lon},{school_lat}"
-        try:
-            response = requests.get(f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_school};{destination}", params=params)
-            st.write(response)
-            data = response.json()
-            if 'routes' in data and data['routes']:
-                distance = data['routes'][0]['distance']
-                if distance <= 800:
-                    valid_school_pairs.append({
-                        '매물주소': address,
-                        '학교': school_name,
-                        '도보거리(m)': round(distance)
-                    })
-                    coords = data['routes'][0]['geometry']['coordinates']
-                    folium.PolyLine(
-                        locations=[[lat, lon] for lon, lat in coords],
-                        color="purple", weight=3, opacity=0.7
-                    ).add_to(m)
-                    folium.Marker([dest_lat, dest_lon], popup=f"매물\n{address}",
-                                  icon=folium.Icon(color="red", icon="home")).add_to(m)
-                    folium.Marker([school_lat, school_lon], popup=f"학교: {school_name}",
-                                  icon=folium.Icon(color="darkgreen", icon="school")).add_to(m)
-        except Exception as e:
-            st.warning(f"학교 경로 오류: {origin_school} → {destination} / {e}")
+        route_data = get_kakao_walk_route((school_lon, school_lat), (dest_lon, dest_lat))
+
+        if route_data and 'routes' in route_data:
+            sections = route_data['routes'][0]['sections']
+            distance = sum(sec['distance'] for sec in sections)
+
+            if distance <= 800:
+                valid_school_pairs.append({
+                    '매물주소': address,
+                    '학교': school_name,
+                    '도보거리(m)': round(distance)
+                })
+
+                for section in sections:
+                    for road in section['roads']:
+                        coords = road['vertexes']
+                        coord_pairs = [[coords[i+1], coords[i]] for i in range(0, len(coords), 2)]
+                        folium.PolyLine(coord_pairs, color="purple", weight=3, opacity=0.7).add_to(m)
+
+                folium.Marker([school_lat, school_lon], popup=f"학교: {school_name}",
+                              icon=folium.Icon(color="darkgreen", icon="education")).add_to(m)
+
+    # 범례 추가
     legend_html = """
     <div style="
         position: fixed; 
@@ -399,10 +400,9 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
     </div>
     """
     m.get_root().html.add_child(folium.Element(legend_html))
-    
+
     df_subway = pd.DataFrame(valid_subway_pairs)
     df_school = pd.DataFrame(valid_school_pairs)
-
 
     return df_subway, df_school, m
 
@@ -412,13 +412,6 @@ subway_info, school_info = load_data()
 
 
 df_subway, df_school, folium_map = get_routes_and_map(filtered_real_estate, subway_info, school_info)
-
-st.dataframe(filtered_real_estate)
-
-
-st.dataframe(df_subway)
-st.dataframe(df_school)
-
 
 
 final_real_estate = pd.merge(df_subway[:100], df_school[:100], how='inner', on=['매물주소'])

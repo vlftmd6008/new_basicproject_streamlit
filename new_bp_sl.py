@@ -302,7 +302,7 @@ def load_data():
 
 
 def get_routes_and_map(filtered_real_estate, subway_info, school_info):
-    print("함수시작")
+    st.write("함수시작")
     valid_subway_pairs = []
     valid_school_pairs = []
     m = folium.Map(location=[37.5665, 126.9780], zoom_start=12)
@@ -312,7 +312,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
         address = row['address']
         if dest_lat == 0.0 or dest_lon == 0.0:
             continue
-        print(valid_subway_pairs)
+        st.write(valid_subway_pairs)
         # 지하철 처리
         closest_subway = min(subway_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         subway_lon, subway_lat, subway_name = closest_subway
@@ -327,7 +327,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
 
         try:
             response = requests.get(url, params=params)
-            print(response)
+            st.write(response)
             data = response.json()
             if 'routes' in data and data['routes']:
                 distance = data['routes'][0]['distance']
@@ -357,7 +357,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
         origin_school = f"{school_lon},{school_lat}"
         try:
             response = requests.get(f"https://api.mapbox.com/directions/v5/mapbox/walking/{origin_school};{destination}", params=params)
-            print(response)
+            st.write(response)
             data = response.json()
             if 'routes' in data and data['routes']:
                 distance = data['routes'][0]['distance']

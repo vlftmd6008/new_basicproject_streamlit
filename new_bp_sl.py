@@ -172,8 +172,13 @@ import requests
 import time
 import json
 
-# 여기 카카오
-KAKAO_REST_API_KEY = st.secrets["KAKAO_REST_API_KEY"]
+try:
+    KAKAO_REST_API_KEY = st.secrets["KAKAO_REST_API_KEY"]
+except:
+    from dotenv import load_dotenv
+    load_dotenv()
+    KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+
 
 CACHE_PATH = "coord_cache.json"
 # 캐시 로드

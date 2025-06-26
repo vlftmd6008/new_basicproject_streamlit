@@ -348,6 +348,7 @@ def get_routes_and_map(filtered_real_estate, subway_info, school_info):
             st.warning(f"지하철 경로 오류: {origin_subway} → {destination} / {e}")
         
         
+        
         # 학교 처리
         closest_school = min(school_info, key=lambda x: (dest_lat - x[1])**2 + (dest_lon - x[0])**2)
         school_lon, school_lat, school_name = closest_school
